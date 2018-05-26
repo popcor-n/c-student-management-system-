@@ -5,25 +5,28 @@
 #include <conio.h>
 #include <string.h>
 #include <windows.h> 
+#include<fcntl.h>
 #define ADUSER_NAME "admin"
 #define ADPASSWORD "Admin"
 typedef struct Student //类型首字母大写以和变量区分 
 {
-	char cName[20];
+	char cName[10];
 	char iNumber[10];
 	int  Score;
 	struct Student  *next; 
 } STU;//因为类型相同所以递归定义
+STU *phead = NULL;
+STU *pEnd = NULL;
 int icount;//全局定义链表长度
-int judgeadmin = -1;
+int judgeadmin = 1;
 void SetPos(int x,int y);
 void Show();
-int Login();
+void Login();
 int Menu_select() ;
 void Head();
 STU* Creat();
 void Print(STU *phead);
-STU *Insert(STU *pHead);
+void ADDstu(char*iNumber,char*cName,int Score) ;
 void sort(STU* pHead);
 void Delete(STU*pHead,int index);
 STU* delHead(STU *pHead);
@@ -32,41 +35,69 @@ void Search_stu(STU* pHead);
 void Revise_stu(STU *pHead);
 void Caozuowei();
 void Chachong(STU *pHead); 
-void Save_inf(STU*pHead);
-STU* Dataread_inf(); 
+void Savestu();
+void Readstu();
 int main()
 {
-
+	char cName[10];
+	char iNumber[10];
+	int  Score;
 	Show();
 	Login();
-
-
+	getchar();
+	system("cls");
 	int iN;
 	while(judgeadmin)
 	{
+		Readstu();
 		iN = Menu_select();
-		//创建链表和录入链表都围绕头结点，在主函数使用一样
-		STU *phead ;
 		switch(iN)
 		{
 			case 0:
 				getch();
 				fflush(stdin);
+				Savestu();
+				FreeAll_LINK(phead);
 				exit(0); 
 			case 1: 
 //								               创建 
 				phead = Creat(); 
-				
-			//	FreeAll_LINK(phead);
+				Savestu();
+				FreeAll_LINK(phead);
 				break;
 			case 2:						 		
 										//	打印
 				Print(phead);
+				Savestu();
+				FreeAll_LINK(phead);
 				break;	
-			case 3:								//追加 
-				
-				phead = Insert(phead);
-				
+			case 3:	
+				for(int in = 1; in <= 3 ; in++)
+				{ 
+					Sleep(200);
+					printf("."); 
+				} 					
+				system("CLS");
+				Head();	printf("\n");							//追加 
+				printf("\t\t\t\t学号：\n\t\t\t\t");
+				scanf("%s",iNumber);
+				printf("\t\t\t\t姓名：\n\t\t\t\t"); 
+				scanf("%s",cName);
+				printf("\t\t\t\t成绩：\n\t\t\t\t");
+				scanf("%d",&Score);
+				ADDstu(iNumber,cName,Score) ;
+					printf("\t\t\t\t");
+					printf("\t\t\t\t\n");
+					for(int in = 1; in <= 3 ; in++)
+					{ 
+						Sleep(200);
+						printf("."); 
+					} 
+					printf("\n\t\t\t\t添加成功！"); 
+					getch();
+				Caozuowei();
+				Savestu();
+				FreeAll_LINK(phead);
 				break;
 			case 4:
 				
@@ -82,9 +113,13 @@ int main()
 				getch();
 				Caozuowei();
 				fflush(stdin);
+				Savestu();
+				FreeAll_LINK(phead);
 				break;
 			case 5:	
 				Revise_stu(phead);
+				Savestu();
+				FreeAll_LINK(phead);
 				break;
 			case 6:	
 			for(int in = 1; in <= 3 ; in++)
@@ -125,20 +160,20 @@ int main()
 				getch();
 				Caozuowei();
 				fflush(stdin);
+				Savestu();
+				FreeAll_LINK(phead);
 				break;
 			case 7:
 				Search_stu(phead);
+				Savestu();
+				FreeAll_LINK(phead);
 				break;			
-		
 		}
 		system("CLS");
 		
 	}
 	
 } 
-
-
-
 void SetPos(int x,int y)				//光标调整 
 {
 	COORD pos;
@@ -165,31 +200,31 @@ void Show()
 		Sleep(1);
 		SetPos(x1,y1);
 		printf("* *");
-		Sleep(0.5);
+		Sleep(1);
 		SetPos(x2,y2);
 		printf("* *");
 		Sleep(1);
 		SetPos(x3,y3);
 		printf("* *");
-		Sleep(0.5);
+		Sleep(1);
 		SetPos(x4,y4);
 		printf("* *");
 		Sleep(1);
 		SetPos(x5,y5);
 		printf("* *");
-		Sleep(0.5);
+		Sleep(1);
 		SetPos(x6,y6);
 		printf("* *");
 		Sleep(1);
 		SetPos(x7,y7);
 		printf("* *");
-		Sleep(0.5);
+		Sleep(1);
 		SetPos(x8,y8);
 		printf("* *");
 		Sleep(1);
 		SetPos(x9,y9);
 		printf("* *");
-		Sleep(0.5);
+		Sleep(1);
 		SetPos(x10,y10);
 		printf("* *");
 		Sleep(1);
@@ -199,7 +234,7 @@ void Show()
 	{
 		SetPos(x,y);
 		printf(" ");
-		Sleep(1);
+		Sleep(0.75);
 		if(x ==89)
 		{
 			printf("\n");
@@ -236,202 +271,310 @@ void Show()
 	system("cls"); 
 } 
 
-int Login()
+void Login()
 {
-	Head();
+	Head(); 
 	printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
-		printf("\n\n\n");
-		printf("\t\t\t\t        ——       LOGIN     ——        \n");
-		printf("\n\n\n");
-		printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * \n");
-	printf("\n\n\n\t\t\t\t\t您是否想以管理员身份登录？\n\n\t\t\t\t\t1 . 是\t\t0 . 否"); 
+	printf("\n\n\n");
+	printf("\t\t\t\t        ——       LOGIN     ——        \n");
+	printf("\n\n\n");
+	printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * \n");
+	printf("\n\n\t\t\t\t\t请选择您的登录身份:\n\n\n\n\t\t\t\t\t\t   1.管理员\n\n\n\n\t\t\t\t\t\t   2.学生"); 
 	char num;
 	num = getch();
-	while(num != '1' && num != '0')
-	{ 
-		printf("\n");
-		printf("非法录入，请重新输入\n");
-			num = getch();																				
-		} 		
-	if(num = '1')
+	while(1)
 	{
+	
 		system("cls");
-		Head();
-		printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
-		printf("\n\n\n");
-		printf("\t\t\t\t        ——       LOGIN     ——        \n");
-		printf("\n\n\n");
-		printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * \n");
-		char username[50];
-		char password[50];
-		printf("\n\n\n\t\t\t请输入用户名及密码\n\n");
-		printf("\t\t\t\t\t用户名：");
-		int x, y;
-		SetPos(50,16);
-		printf("┏┈┈┈┈┈┈┈┈┈┈┈┈┈┓");  
-		SetPos(50,17);
-		printf("☆　　　　 　 ☆");
-		SetPos(50,18);
-		printf("┗┈┈┈┈┈┈┈┈┈┈┈┈┈┛"); 
-		SetPos(52,17);
-		scanf("%s",username);
-		printf("\n\n");
-		SetPos(30,21);
-		printf("\t\t密码： ") ;
-		SetPos(50,20);
-		printf("┏┈┈┈┈┈┈┈┈┈┈┈┈┈┓");  
-		SetPos(50,21);
-		printf("☆　　　　　　☆");
-		SetPos(50,22);
-		printf("┗┈┈┈┈┈┈┈┈┈┈┈┈┈┛"); 
-		SetPos(52,21);
-
-		int i = 0,n = 5;
-		char ch; 
-		while((ch = getch())!='\r')
+		if(num =='1')
 		{
-			fflush(stdin);
-			 if(ch == '\b')
-        	 { 
-            	if(i>0)
-            	{
-                	i--;
-                	printf("\b \b");
-                	password[i] = 0;
-                	continue;
-            	}
-            	else
-            	{
-                	printf("\a");     //没有内容的时候
-                	continue;
-             	}
-             }
-       		 else
-        	 {
-            	password[i] = ch;
-            	printf("*");
-        	 }
- 
-        i++;
-		}
-		if(strcmp(username,ADUSER_NAME)==0 && strcmp(password,ADPASSWORD) == 0)
-		{
-			printf("\n\t\t登录成功！");
-			printf("\n\t\t欢迎您，管理员！"); 
-			printf("\n\n将在3 秒后跳转...");
-			Sleep(3000);
-			system("CLS");
-		}
-		else
-		{
-			SetPos(70,21);
-			printf("用户名或密码错误，您还有一次机会\n");
-		//	system("pause");
-			x = 17;y = 25;
-			for(i = 0; i < 35; i++,x+=2)
-			{
-				SetPos(x,y);
-				printf("—-");
-				Sleep(10);
-			}
-			SetPos(20,26);
-			printf("要重新登录请按任意键\t\t要退出程序请按Esc键\n");
-			char cho;
-			cho = getch();
-			if(cho == 0x1b)
-			exit(0);
-			system("cls");
-			
-			Head();
+			printf("\t\t\t\t\t╭═════════■□■□═══╮\n");  
+			printf("\t\t\t\t\t    学生信息管理系统\t  管理端 \n");  
+			printf("\t\t\t\t\t╰═══■□■□══════════╯\n");  
 			printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
 			printf("\n\n\n");
-			printf("\t\t\t\t    ——       LOGIN     ——        \n");
+			printf("\t\t\t\t        ——       LOGIN     ——        \n");
 			printf("\n\n\n");
-			printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * \n"); 
-	 
-			char username[50];
-			char password[50];
-			printf("\n\n\n\t\t请输入用户名及密码\n\n");
-			printf("\t\t\t\t\t用户名：");
-			SetPos(50,16);
-			printf("┏┈┈┈┈┈┈┈┈┈┈┈┈┈┓");  
+			printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * \n");
+			printf("\n\n\t\t\t\t\t请选择您的登录身份:\n\n\n\n\t\t\t\t\t\t   1.管理员\n\n\n\n\t\t\t\t\t\t   2.学生");
 			SetPos(50,17);
-			printf("☆　　　　 　 ☆");
-			SetPos(50,18);
-			printf("┗┈┈┈┈┈┈┈┈┈┈┈┈┈┛"); 
-			SetPos(52,17);
-			scanf("%s",username);
-			printf("\n\n");
-			SetPos(30,21);
-			printf("\t\t密码： ") ;
-			SetPos(50,20);
-			printf("┏┈┈┈┈┈┈┈┈┈┈┈┈┈┓");  
-			SetPos(50,21);
-			printf("☆　　　　 　 ☆");
-			SetPos(50,22);
-			printf("┗┈┈┈┈┈┈┈┈┈┈┈┈┈┛"); 
-			SetPos(52,21);
-			 i = 0,n = 5;
-			char ch; 
-			while((ch = getch())!='\r')
-			{
-				fflush(stdin);
-				 if(ch == '\b')
-	        	 { 
-	            	if(i>0)
-	            	{
-	                	i--;
-	                	printf("\b \b");
-	                	password[i] = 0;
-	                	continue;
-	            	}
-	            	else
-	            	{
-	                	printf("\a");     //没有内容的时候
-	                	continue;
-	             	}
-	             }
-	       		 else
-	        	 {
-	            	password[i] = ch;
-	            	printf("*");
-	        	 }
-	 
-	        i++;
-			}
-			if(strcmp(username,ADUSER_NAME)==0 && strcmp(password,ADPASSWORD) == 0)
-			{
-				printf("\n\t\t登录成功！");
-				printf("\n\t\t欢迎您，管理员！"); 
-				printf("\n\n将在3 秒后跳转...");
-				Sleep(3000);
-				system("CLS");
-			}
+			printf("┏┈┈┈┈┈┈┈┈┈┈┓");
+			SetPos(50,19);
+			printf("┗┈┈┈┈┈┈┈┈┈┈┛");
+			char cho;
+			cho = getch();
+			if(cho == 0x0d)
+			{	
+				system("cls");
+				Head();
+				printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
+				printf("\n\n\n");
+				printf("\t\t\t\t        ——       LOGIN     ——        \n");
+				printf("\n\n\n");
+				printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * \n");
+				char username[50];
+				char password[50];
+				printf("\n\n\n\t\t\t请输入用户名及密码\n\n");
+				printf("\t\t\t\t\t用户名：");
+				int x, y;
+				SetPos(50,16);
+				printf("┏┈┈┈┈┈┈┈┈┈┈┈┈┈┓");  
+				SetPos(50,17);
+				printf("☆　　　　 　 ☆");
+				SetPos(50,18);
+				printf("┗┈┈┈┈┈┈┈┈┈┈┈┈┈┛"); 
+				SetPos(52,17);
+				scanf("%s",username);
+				printf("\n\n");
+				SetPos(30,21);
+				printf("\t\t密码： ") ;
+				SetPos(50,20);
+				printf("┏┈┈┈┈┈┈┈┈┈┈┈┈┈┓");  
+				SetPos(50,21);
+				printf("☆　　　　　　☆");
+				SetPos(50,22);
+				printf("┗┈┈┈┈┈┈┈┈┈┈┈┈┈┛"); 
+				SetPos(52,21);
+		
+				int i = 0,n = 5;
+				char ch; 
+				while((ch = getch())!='\r')
+				{
+					fflush(stdin);
+					 if(ch == '\b')
+		        	 { 
+		            	if(i>0)
+		            	{
+		                	i--;
+		                	printf("\b \b");
+		                	password[i] = 0;
+		                	continue;
+		            	}
+		            	else
+		            	{
+		                	printf("\a");     //没有内容的时候
+		                	continue;
+		             	}
+		             }
+		       		 else
+		        	 {
+		            	password[i] = ch;
+		            	printf("*");
+		        	 }
+		 
+		        i++;
+				}
+				
+				if(strcmp(username,ADUSER_NAME)==0 && strcmp(password,ADPASSWORD) == 0)
+				{
+					system("cls");
+					int x,y;
+					x = 28;y = 17;
+					SetPos(x,y);
+					printf("█");
+					Sleep(100); 
+					x +=6;
+					SetPos(x,y);
+					printf("▇");
+					Sleep(100);
+					x +=6;
+					SetPos(x,y);
+					printf("▆");
+					Sleep(100);
+					x +=6;
+					SetPos(x,y);
+					printf("▅");
+					Sleep(100);
+					x +=6;
+					SetPos(x,y);
+					printf("▄");//
+					Sleep(100);
+					x +=6;
+					SetPos(x,y);
+					printf("▅");
+					Sleep(100);
+					x +=6;
+					SetPos(x,y);
+					printf("▆");
+					Sleep(100);
+					x +=6;
+					SetPos(x,y);
+					printf("▇");
+					Sleep(100);
+					x +=6;
+					SetPos(x,y);
+					printf("█");
+					printf("\n\n\t\t\t\t\t\t\t\t欢迎您，管理员！"); 
+					return;
+				}
 				else
 				{
-					for(i = 3; i != 0; i--)
-					{ 
-						printf("\n\n登录异常，本系统将在%d秒后自动关闭...\n",i);
-						Sleep(1000);
-					} 
-					exit(0); 
+					SetPos(70,21);
+					printf("用户名或密码错误，您还有一次机会\n");
+				//	system("pause");
+					x = 17;y = 25;
+					for(i = 0; i < 35; i++,x+=2)
+					{
+						SetPos(x,y);
+						printf("—-");
+						Sleep(10);
+					}
+					SetPos(20,26);
+					printf("要重新登录请按任意键\t\t要退出程序请按Esc键\n");
+					char cho;
+					cho = getch();
+					if(cho == 0x1b)
+					exit(0);
+					system("cls");
+					
+					Head();
+					printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
+					printf("\n\n\n");
+					printf("\t\t\t\t    ——       LOGIN     ——        \n");
+					printf("\n\n\n");
+					printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * \n"); 
+			 
+					char username[50];
+					char password[50];
+					printf("\n\n\n\t\t请输入用户名及密码\n\n");
+					printf("\t\t\t\t\t用户名：");
+					SetPos(50,16);
+					printf("┏┈┈┈┈┈┈┈┈┈┈┈┈┈┓");  
+					SetPos(50,17);
+					printf("☆　　　　 　 ☆");
+					SetPos(50,18);
+					printf("┗┈┈┈┈┈┈┈┈┈┈┈┈┈┛"); 
+					SetPos(52,17);
+					scanf("%s",username);
+					printf("\n\n");
+					SetPos(30,21);
+					printf("\t\t密码： ") ;
+					SetPos(50,20);
+					printf("┏┈┈┈┈┈┈┈┈┈┈┈┈┈┓");  
+					SetPos(50,21);
+					printf("☆　　　　 　 ☆");
+					SetPos(50,22);
+					printf("┗┈┈┈┈┈┈┈┈┈┈┈┈┈┛"); 
+					SetPos(52,21);
+					 i = 0,n = 5;
+					char ch; 
+					while((ch = getch())!='\r')
+					{
+						fflush(stdin);
+						 if(ch == '\b')
+			        	 { 
+			            	if(i>0)
+			            	{
+			                	i--;
+			                	printf("\b \b");
+			                	password[i] = 0;
+			                	continue;
+			            	}
+			            	else
+			            	{
+			                	printf("\a");     //没有内容的时候
+			                	continue;
+			             	}
+			             }
+			       		 else
+			        	 {
+			            	password[i] = ch;
+			            	printf("*");
+			        	 }
+			 
+			        i++;
+					}
+					if(strcmp(username,ADUSER_NAME)==0 && strcmp(password,ADPASSWORD) == 0)
+					{
+						 
+						system("cls");
+						int x,y;
+						x = 28;y = 17;
+						SetPos(x,y);
+						printf("█");
+						Sleep(100); 
+						x +=6;
+						SetPos(x,y);
+						printf("▇");
+						Sleep(100);
+						x +=6;
+						SetPos(x,y);
+						printf("▆");
+						Sleep(100);
+						x +=6;
+						SetPos(x,y);
+						printf("▅");
+						Sleep(100);
+						x +=6;
+						SetPos(x,y);
+						printf("▄");//
+						Sleep(100);
+						x +=6;
+						SetPos(x,y);
+						printf("▅");
+						Sleep(100);
+						x +=6;
+						SetPos(x,y);
+						printf("▆");
+						Sleep(100);
+						x +=6;
+						SetPos(x,y);
+						printf("▇");
+						Sleep(100);
+						x +=6;
+						SetPos(x,y);
+						printf("█");
+						printf("\n\n\t\t\t\t\t\t\t\t欢迎您，管理员！");
+					
+						return; 
+					}
+						else
+						{
+							for(i = 3; i != 0; i--)
+							{ 
+								printf("\n\n登录异常，本系统将在%d秒后自动关闭...\n",i);
+								Sleep(1000);
+							} 
+							exit(0); 
+						}
 				}
+			}
 		}
+		if(num == '2')
+		{
+			printf("\t\t\t\t\t╭═════════■□■□═══╮\n");  
+			printf("\t\t\t\t\t    学生信息管理系统\t  管理端 \n");  
+			printf("\t\t\t\t\t╰═══■□■□══════════╯\n");  
+			printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
+			printf("\n\n\n");
+			printf("\t\t\t\t        ——       LOGIN     ——        \n");
+			printf("\n\n\n");
+			printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * \n");
+			printf("\n\n\t\t\t\t\t请选择您的登录身份:\n\n\n\n\t\t\t\t\t\t   1.管理员\n\n\n\n\t\t\t\t\t\t   2.学生"); 
+			SetPos(50,21);
+			printf("┏┈┈┈┈┈┈┈┈┈┈┓");
+			SetPos(50,23);
+			printf("┗┈┈┈┈┈┈┈┈┈┈┛");
+			char cho;
+			cho = getch();
+			if(cho == 0x0d)
+			{
+				//学生端登录 
+				
+			}
+				
+		}
+		
+			num = getch();
 	}
-	
-	
-//	else
-//	{
-//		//学生端登录，只实现查询功能；
-//		 
-//	}
 }
 
 	
 
 int Menu_select()                              //菜单选择系统函数  
 {  
-     char c;   
+    char c;
+	system("cls");   
 	printf("\t\t\t\t\t╭═════════■□■□═══╮\n");  
 	printf("\t\t\t\t\t    学生信息管理系统\t  管理端 \n");  
 	printf("\t\t\t\t\t╰═══■□■□══════════╯\n");  
@@ -440,12 +583,12 @@ int Menu_select()                              //菜单选择系统函数
 	printf("\t\t\t\t  │ 1. 创建表单\t           2. 显示记录 │\n\n\n");  
 	printf("\t\t\t\t  │                                    │\n\n");  
 	printf("\t\t\t\t  │ 3. 增加信息\t           4. 数据排序 │\n\n\n");  
-	printf("\t\t\t\t  │                 ★                 │\n\n");  
+	printf("\t\t\t\t  │                  ★                │\n\n");  
 	printf("\t\t\t\t  │ 5. 修改记录\t           6. 删除记录 │\n\n\n");  
 	printf("\t\t\t\t  │                                    │\n\n");  
 	printf("\t\t\t\t  │ 7. 信息查询\t           0. 退出程序 │\n\n\n");  
 	printf("\t\t\t\t  ↘—————————————————↙\n\n");
-	SetPos(0,0);
+	//SetPos(0,0);
 	int m,n,k,l;
 	m = 25,n = 10,k = 82,l = 10;
 	for(int i = 0; i < 10; i++,n++,l++)
@@ -458,10 +601,9 @@ int Menu_select()                              //菜单选择系统函数
 		Sleep(15);
 		SetPos(m,n);
 	
-	}printf("*");
+	}//SetPos(m,n);printf("*");
 	int x,y;int a,b;
 	x = 7;y = 7;a = 100;b = 7;
-	SetPos(x,y);
 	for(int i = 0; i < 20; i++,y++,b++)
 	{
 		
@@ -474,6 +616,7 @@ int Menu_select()                              //菜单选择系统函数
 	
 	}
 	x = 7;y = 28;a = 100;b = 28;
+	SetPos(x,y);
 	for(int i = 0; i < 30; i++,x++,a--)
 	{
 		printf("*");
@@ -495,12 +638,12 @@ int Menu_select()                              //菜单选择系统函数
 		printf("\t\t\t\t  │ 1. 创建表单\t           2. 显示记录 │\n\n\n");  
 		printf("\t\t\t\t  │                                    │\n\n");  
 		printf("\t\t\t\t  │ 3. 增加信息\t           4. 数据排序 │\n\n\n");  
-		printf("\t\t\t\t  │                 ★                 │\n\n");  
+		printf("\t\t\t\t  │                  ★                │\n\n");  
 		printf("\t\t\t\t  │ 5. 修改记录\t           6. 删除记录 │\n\n\n");  
 		printf("\t\t\t\t  │                                    │\n\n");  
 		printf("\t\t\t\t  │ 7. 信息查询\t           0. 退出程序 │\n\n\n");  
 		printf("\t\t\t\t  ↘—————————————————↙\n\n"); 
-		SetPos(0,0);
+	//	SetPos(0,0);
 		m = 25,n = 10,k = 82,l = 10;
 		for(int i = 0; i < 10; i++,n++,l++)
 		{
@@ -510,7 +653,7 @@ int Menu_select()                              //菜单选择系统函数
 			 printf("*\n");
 			SetPos(m,n);
 		
-		}printf("*");
+		}
 		
 		x = 7;y = 7;a = 100;b = 7;
 		SetPos(x,y);
@@ -565,10 +708,10 @@ STU* Creat()//创建并输入链表函数
 		system("CLS");
 		Head();	puts("");
 		printf("\t\t\t\t*************创建名单************\n"); 
-		STU*pHead = NULL;
-		STU *pNew ,*pEnd; //定义新节点，原结点（新节点前面那个，此处定义只是命名） 
+	//	STU*pHead = NULL;
+		STU *pNew ; //定义新节点，原结点（新节点前面那个，此处定义只是命名） 
 		icount = 0;
-		pNew = pEnd = (STU *)malloc(sizeof(STU));//此时所谓新结点和原结点都在同一空间
+		pNew =  (STU *)malloc(sizeof(STU));//此时所谓新结点和原结点都在同一空间
 		//录入
 		printf("\t\t\t\t请输入学生的信息：\n");
 		printf("\t\t\t\t学号为0时停止录入(此次录入信息不包含在内)\n");
@@ -595,10 +738,10 @@ STU* Creat()//创建并输入链表函数
 			icount++;
 			if(icount == 1)//分为第一个结点和其他结点两种情况 
 			{
-				pNew->next = pHead;
+				pNew->next = phead;
 				
 				pEnd = pNew;//此时新即头即尾 
-				 pHead = pNew;
+				 phead = pNew;
 			} 
 			else
 			{
@@ -636,11 +779,13 @@ STU* Creat()//创建并输入链表函数
 			} 
 			printf("\n\t\t\t\t创建并录入成功！");
 		free(pNew);
-	//	Save_inf(pHead);
+//		Savestu(); 
 		getch();
 		Caozuowei();
 		fflush(stdin);
-		return pHead;
+		return phead;
+		
+	
 	} 
 }
 void Print(STU *phead)						//输出函数
@@ -671,51 +816,43 @@ void Print(STU *phead)						//输出函数
 		ptemp = ptemp->next;
 		index++;
 	} 
-	Chachong(phead);
+//	Chachong(phead);
 	getch();
 	Caozuowei();
 	fflush(stdin);
 }
-STU *Insert(STU *pHead)//添加单个学生信息（尾插） 
+void ADDstu(char*iNumber,char*cName,int Score) 
 {
-	for(int in = 1; in <= 3 ; in++)
-	{ 
-		Sleep(200);
-		printf("."); 
-	} 					
-	system("CLS");
-	Head();	printf("\n");
-	printf("\t\t\t\t*************增加学生信息************\n") ;
-	STU*p = pHead,*pNew;
-	pNew = (STU*)malloc(sizeof(STU));
-	printf("\t\t\t\t学号：\n\t\t\t\t");
-	scanf("%s",pNew->iNumber);
-	printf("\t\t\t\t姓名：\n\t\t\t\t"); 
-	scanf("%s",pNew->cName);
-	printf("\t\t\t\t成绩：\n\t\t\t\t");
-	scanf("%d",&pNew->Score);
-	printf("\n\n");		
-	while(p->next != NULL)
-	p = p->next;
-	p->next = pNew;
-	pNew->next = NULL;
+	STU*p = phead;
+
+	//逻辑
+	//创建结点
+	STU* ptemp ;
+	ptemp = (STU*)malloc(sizeof(STU));
+	strcpy(ptemp->iNumber,iNumber);
+	strcpy(ptemp->cName,cName);
+	ptemp->Score = Score;
+	ptemp->next = NULL;
+	if(phead == NULL||pEnd == NULL)
+	{
+		phead = ptemp;
+		pEnd = ptemp;
+	}
+	else
+	{
+		 pEnd->next = ptemp;
+		 pEnd = ptemp;
+	}
+	ptemp = pEnd;
 	icount++;
-	printf("\t\t\t\t");
-	for(int in = 1; in <= 3 ; in++)
-	{ 
-		Sleep(200);
-		printf("."); 
-	} 
-	printf("\n\t\t\t\t添加成功！"); 
-	getch();
-	Caozuowei();
-	return pHead;
+
+	
 }
 
-void sort(STU* pHead)
+void sort(STU* phead)
 {
 	int temp ;char ci[10];char cn[20];
-	STU * p = pHead,*q,*s;
+	STU * p = phead,*q,*s;
 	printf("\t\t\t\t请选择您想用哪种方式排序。\n\t\t\t\t1)按成绩由高到低排序 \t2)按学号由小到大排序\n\t\t\t\t");
 	char ccho;
 	fflush(stdin);
@@ -796,7 +933,7 @@ void sort(STU* pHead)
 		}
 	}
 } 
-void Delete(STU*pHead,int index)
+void Delete(STU*phead,int index)
 {
 //	printf("请选择删除方式。\n1)删除输入的序号对应的学生。\t2)删除全部学生\n"); 
 	int i;
@@ -813,7 +950,7 @@ void Delete(STU*pHead,int index)
 		return; 
 	}
 	STU*pTemp;
-	pTemp = pHead;
+	pTemp = phead;
 	STU*pPre;
 	pPre = pTemp;
 	for(i = 1; i < index; i++)
@@ -833,10 +970,10 @@ void Delete(STU*pHead,int index)
 	} 
 	printf("\n\t\t\t\t删除成功！"); 
 }
-STU* delHead(STU *pHead)
+STU* delHead(STU *phead)
 { 	
-	STU*p = pHead;
-	pHead=p->next;
+	STU*p = phead;
+	phead=p->next;
     free(p); 
     icount--;
     printf("\n\t\t\t\t");
@@ -846,25 +983,25 @@ STU* delHead(STU *pHead)
 				printf("."); 
 			} 
 			printf("\n\t\t\t\t删除成功！"); 
-    return 	pHead;
+    return 	phead;
 }
-STU* FreeAll_LINK(STU*pHead)
+STU* FreeAll_LINK(STU*phead)
 {
-	STU * p = pHead;
-	while(pHead != NULL)
+	STU * p = phead;
+	while(phead != NULL)
 	{
 		//记录结点 
-		p = pHead;
+		p = phead;
 		//向后移动 
-		pHead = p->next;
+		phead = p->next;
 		 
 		free(p);
 		icount = 0;
 	}
-	return(pHead);
+	return(phead);
 	 
 }
-void Search_stu(STU* pHead)
+void Search_stu(STU* phead)
 {
 	for(int in = 1; in <= 3 ; in++)
 	{ 
@@ -893,7 +1030,7 @@ void Search_stu(STU* pHead)
 		int p = 0;
 		printf("\n\t\t\t\t请输入要查询的学生学号\n\t\t\t\t");
 		scanf("%s",siNumber);
-		STU* pTemp = pHead;
+		STU* pTemp = phead;
 		while(pTemp != NULL)
 		{
 			if(strcmp(pTemp->iNumber,siNumber) == 0)
@@ -913,7 +1050,7 @@ void Search_stu(STU* pHead)
 		int p = 0;
 		printf("\n\t\t\t\t请输入要查询的学生姓名\n\t\t\t\t");
 		scanf("%s",scName);
-		STU* pTemp = pHead;
+		STU* pTemp = phead;
 		while(pTemp != NULL)
 		{
 			if(strcmp(pTemp->cName,scName) == 0)
@@ -932,7 +1069,7 @@ void Search_stu(STU* pHead)
 	fflush(stdin);	
 	
 } 
-void Revise_stu(STU *pHead)
+void Revise_stu(STU *phead)
 {
 	for(int in = 1; in <= 3 ; in++)
 	{ 
@@ -962,7 +1099,7 @@ void Revise_stu(STU *pHead)
 		int p = 0;
 		printf("请输入要修改的学生学号\n\t\t\t\t");
 		scanf("%s",siNumber);
-		STU* pTemp = pHead;
+		STU* pTemp = phead;
 		while(pTemp != NULL)
 		{
 			if(strcmp(pTemp->iNumber,siNumber) == 0)
@@ -996,7 +1133,7 @@ void Revise_stu(STU *pHead)
 		int p = 0;
 		printf("\n\t\t\t\t请输入要修改的学生姓名\n\t\t\t\t");
 		scanf("%s",scName);
-		STU* pTemp = pHead;
+		STU* pTemp = phead;
 		while(pTemp != NULL)
 		{
 			if(strcmp(pTemp->cName,scName) == 0)
@@ -1047,12 +1184,12 @@ void Caozuowei()
 	if(cho == 0x1b)
 	exit(0);
 }
-void Chachong (STU*pHead)
+void Chachong (STU*phead)
 {
 	int i,j,index = 0;
 	STU* p,*s;
-	s = pHead;
-	p = pHead->next;
+	s = phead;
+	p = phead->next;
 	for(i = 1; i < icount; i++)
 	{
 		for(j = 0; j < i-1; j++)
@@ -1071,50 +1208,93 @@ void Chachong (STU*pHead)
 }
 //文件操作
 //将链表信息保存到文件中 
-void Save_inf(STU*pHead)
+void Savestu()
 {
-	STU* ptemp;
-	FILE* fp;
-	if((fp = fopen("e:\\wj\\test.txt","wt")) == NULL)
+	FILE* fp = 	NULL;
+	//判断链表是否为空
+	if(NULL == phead)
 	{
-		printf("诶呀，出错啦");
-		 return;
+		printf("没有学生");
+		return ; 
 	}	
-	for(ptemp = pHead; ptemp != NULL; ptemp = ptemp->next)
+	STU* ptemp = phead;
+	//打开文件
+	fp = fopen ("e:\\wj\\test.txt","wb+");
+	if(NULL == fp)
+	{ 
+		printf("打开失败");
+		return; 
+	} 
+	//操作文件指针
+	char strBuf[30];char strScore[10];
+	while(ptemp)
 	{
-		fprintf(fp,"%s %s %d\n",ptemp->iNumber,ptemp->cName,ptemp->Score);
-	}
-		printf("\n保存成功，任意键退出");
-		getch();
-		fclose(fp);
-		
+		//学号
+		strcpy(strBuf,ptemp->iNumber);
+		strcat(strBuf,".");
+		//姓名：
+		strcat(strBuf,ptemp->cName);
+		strcat(strBuf,".");
+		//成绩
+	//	itoa(ptemp->Score,strScore,10);
+		sprintf(strScore,"%d",ptemp->Score);
+		strcat(strBuf,strScore);
+		fwrite(strBuf,1,strlen(strBuf),fp); 
+		fwrite("\r\n",1,strlen("\r\n"),fp); 
+		ptemp = ptemp->next;
+	} 
+	//关闭文件
+	fclose(fp); 
 }
 //读取文件中的内容到单链表
-STU* Dataread_inf()
-{
-	STU*pHead,*r,*p;
-	FILE*fp;
-	if((fp = fopen("e:\\wj\\test.txt","rt")) == NULL)
-	{
-		printf("诶呀!出错了QAQ");
-		return 0 ;
-		 
-	}
-	pHead = (STU*)malloc(sizeof(STU));
-	pHead->next = NULL;
-	r = pHead;
-	while(!feof(fp))
-	{
-		p = (STU*)malloc(sizeof(STU));
-		fscanf(fp,"%s %s %d",p->iNumber,p->cName,&p->Score);
-		r = p;
-		
-	}
-	r->next = NULL;
-	fclose(fp);
-	printf("读取成功");
-	getch();
-	return(pHead); 
-} 
 
+void Readstu()
+{
+	FILE* fp = fopen("e:\\wj\\test.txt","rb+");
+	if(NULL == fp)
+	{
+		printf("打开失败");
+		return  ; 
+	}
+	char strBuf[30] = {"0"};int i = 0,ncount = 0, j = 0;
+	char strNum[10] = {"0"};
+	char strName[10] = {"0"};
+	char strScore[10] = {"0"};
+	while(NULL != fgets(strBuf,30,fp))
+	{
+		i = 0;ncount = 0; j = 0;
+		for(i = 0; strBuf[i]!= '\r';i++)
+		{
+			if(0 == ncount)
+			{
+				strNum[i] = strBuf[i];
+				if(strBuf[i] == '.')
+				{
+					strNum[i] == '\0';
+					ncount = 1;
+				}
+			}
+			else if(ncount == 1)
+			{
+				strName[j] = strBuf[j];
+				j++;
+				if(strBuf[j] == '.')
+				{
+					strName[j] = '\0';
+					ncount++;
+					j = 0;
+				}
+			}
+			else
+			{
+				strScore[j] = strBuf[j];
+				j++;
+			}
+		}
+		int l = strlen(strNum);
+		strNum[l-1] = '\0';
+		ADDstu(strNum,strName,atoi(strScore)) ;
+	}
+	fclose(fp);
+}
 ```
