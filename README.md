@@ -286,6 +286,16 @@ void Login()
 	{
 	
 		system("cls");
+		if(num != '1' && num != '2')
+		{
+			Head(); 
+			printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
+			printf("\n\n\n");
+			printf("\t\t\t\t        ——       LOGIN     ——        \n");
+			printf("\n\n\n");
+			printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * \n");
+			printf("\n\n\t\t\t\t\t请选择您的登录身份:\n\n\n\n\t\t\t\t\t\t   1.管理员\n\n\n\n\t\t\t\t\t\t   2.学生"); 
+		} 
 		if(num =='1')
 		{
 			printf("\t\t\t\t\t╭═════════■□■□═══╮\n");  
