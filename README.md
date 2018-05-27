@@ -8,6 +8,7 @@
 #include<fcntl.h>
 #define ADUSER_NAME "admin"
 #define ADPASSWORD "Admin"
+#define STPASSWORD "666"
 typedef struct Student //类型首字母大写以和变量区分 
 {
 	char cName[10];
@@ -19,11 +20,13 @@ STU *phead = NULL;
 STU *pEnd = NULL;
 int icount;//全局定义链表长度
 int judgeadmin = 1;
+char STusername[50];
 void SetPos(int x,int y);
 void Show();
 void Login();
 int Menu_select() ;
 void Head();
+void STHead(); 
 STU* Creat();
 void Print(STU *phead);
 void ADDstu(char*iNumber,char*cName,int Score) ;
@@ -34,9 +37,13 @@ STU* FreeAll_LINK(STU*pHead);
 void Search_stu(STU* pHead);
 void Revise_stu(STU *pHead);
 void Caozuowei();
+void backlogin_caozuowei();
+void Shensucaozuowei();
 void Chachong(STU *pHead); 
 void Savestu();
 void Readstu();
+void Shensuwrite();
+void Shensuread();
 int main()
 {
 	char cName[10];
@@ -47,6 +54,69 @@ int main()
 	getchar();
 	system("cls");
 	int iN;
+	
+	if(!judgeadmin)
+	{
+		Readstu();
+		STHead(); 
+		printf("\n\t\t\t\t*************学生端信息查询************\n");
+		int p = 0;
+		STU* pTemp = phead;
+		while(pTemp != NULL)
+		{
+			if(strcmp(pTemp->iNumber,STusername) == 0)
+			{
+				p++;
+				printf("\n\n\n\t\t\t\t\t你的信息如下：\n\t\t\t\t\t姓名： %s\n\t\t\t\t\t学号： %s\n\t\t\t\t\t成绩： %d\n",pTemp->cName,pTemp->iNumber,pTemp->Score);
+				printf("\n\t\t\t\t\t是否想要申诉？\n\n\n\t\t\t如果需要申诉，请言简意赅在30个字内表达清晰你的学号，需要\n\t\t\t修改的信息以及正确信息，我们的管理员将在第一时间为你修改(￣▽￣)／");
+			 	 Shensucaozuowei();
+				 Shensuwrite();
+				 system("cls");
+				 printf("\n\t\t\t\t*************申诉完成************\n");
+				 getchar(); 
+				 backlogin_caozuowei();
+				break;
+			}
+			pTemp = pTemp-> next;
+		}
+		 
+		if(p == 0)
+		{
+			printf("\n\n\n\t\t\t\t\t管理员还没有添加你的信息哦。");
+			backlogin_caozuowei();
+		}
+		free(phead);
+	}
+	else
+	{
+		system("cls");	
+		Head();
+		printf("是否先查看学生申诉信息？\n");
+		int i;
+	printf("\n\n\n\t ");
+	for(i = 0; i < 30; i++)
+	{
+		printf("—-");
+		Sleep(10);
+	}
+	printf("\n\t\t\t   ");
+	printf("要查看申诉界面请按Enter键\t\t要跳过申诉界面请按任意键\n");
+	char cho;
+	cho = getch();
+	if(cho == 0x0d)
+	{ 
+		 Shensuread();
+		 printf("\n\n\n\t ");
+	  	 for(i = 0; i < 30; i++)
+		 {
+			printf("—-");
+			Sleep(10);
+		 }
+		 printf("\n\t\t\t\t   ");
+		 printf("任意键进入管理员端");
+		 getch();
+	}
+	system("cls");
 	while(judgeadmin)
 	{
 		Readstu();
@@ -172,7 +242,7 @@ int main()
 		system("CLS");
 		
 	}
-	
+	} 
 } 
 void SetPos(int x,int y)				//光标调整 
 {
@@ -273,7 +343,9 @@ void Show()
 
 void Login()
 {
-	Head(); 
+	printf("\t\t\t\t\t╭═════════■□■□═══╮\n");  
+	printf("\t\t\t\t\t    学生信息管理系统\t      \n");  
+	printf("\t\t\t\t\t╰═══■□■□══════════╯\n"); 
 	printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
 	printf("\n\n\n");
 	printf("\t\t\t\t        ——       LOGIN     ——        \n");
@@ -288,7 +360,9 @@ void Login()
 		system("cls");
 		if(num != '1' && num != '2')
 		{
-			Head(); 
+			printf("\t\t\t\t\t╭═════════■□■□═══╮\n");  
+			printf("\t\t\t\t\t    学生信息管理系统\t   \n");  
+			printf("\t\t\t\t\t╰═══■□■□══════════╯\n"); 
 			printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
 			printf("\n\n\n");
 			printf("\t\t\t\t        ——       LOGIN     ——        \n");
@@ -322,8 +396,8 @@ void Login()
 				printf("\t\t\t\t        ——       LOGIN     ——        \n");
 				printf("\n\n\n");
 				printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * \n");
-				char username[50];
-				char password[50];
+				char username[50] = {0};
+				char password[50] = {0};
 				printf("\n\n\n\t\t\t请输入用户名及密码\n\n");
 				printf("\t\t\t\t\t用户名：");
 				int x, y;
@@ -553,7 +627,7 @@ void Login()
 		if(num == '2')
 		{
 			printf("\t\t\t\t\t╭═════════■□■□═══╮\n");  
-			printf("\t\t\t\t\t    学生信息管理系统\t  管理端 \n");  
+			printf("\t\t\t\t\t    学生信息管理系统\t   \n");  
 			printf("\t\t\t\t\t╰═══■□■□══════════╯\n");  
 			printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
 			printf("\n\n\n");
@@ -570,6 +644,163 @@ void Login()
 			if(cho == 0x0d)
 			{
 				//学生端登录 
+				system("cls");
+				STHead();
+				printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
+				printf("\n\n\n");
+				printf("\t\t\t\t        ——       LOGIN     ——        \n");
+				printf("\n\n\n");
+				printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * \n");
+				char password[50];
+				printf("\n\n\n\t\t\t请输入用户名及密码\n\n");
+				printf("\t\t\t\t\t用户名：");
+				int x, y;
+				SetPos(50,16);
+				printf("┏┈┈┈┈┈┈┈┈┈┈┈┈┈┓");  
+				SetPos(50,17);
+				printf("☆　　　　 　 ☆");
+				SetPos(50,18);
+				printf("┗┈┈┈┈┈┈┈┈┈┈┈┈┈┛"); 
+				SetPos(52,17);
+				scanf("%s",STusername);
+				printf("\n\n");
+				SetPos(30,21);
+				printf("\t\t密码： ") ;
+				SetPos(50,20);
+				printf("┏┈┈┈┈┈┈┈┈┈┈┈┈┈┓");  
+				SetPos(50,21);
+				printf("☆　　　　　　☆");
+				SetPos(50,22);
+				printf("┗┈┈┈┈┈┈┈┈┈┈┈┈┈┛"); 
+				SetPos(52,21);
+		
+				int	i = 0,n = 5;
+				char ch; 
+				while((ch = getch())!='\r')
+				{
+					fflush(stdin);
+					 if(ch == '\b')
+		        	 { 
+		            	if(i>0)
+		            	{
+		                	i--;
+		                	printf("\b \b");
+		                	password[i] = 0;
+		                	continue;
+		            	}
+		            	else
+		            	{
+		                	printf("\a");     //没有内容的时候
+		                	continue;
+		             	}
+		             }
+		       		 else
+		        	 {
+		            	password[i] = ch;
+		            	printf("*");
+		        	 }
+		 
+		        i++;
+				}
+				if(strcmp(password,STPASSWORD) == 0)
+				{
+					printf("\n\n登录中...");
+					judgeadmin = 0;
+					return  ; 
+				}
+				else
+				{
+					SetPos(70,21);
+					printf("用户名或密码错误，您还有一次机会\n");
+				//	system("pause");
+					x = 17;y = 25;
+					for(i = 0; i < 35; i++,x+=2)
+					{
+						SetPos(x,y);
+						printf("—-");
+						Sleep(10);
+					}
+					SetPos(20,26);
+					printf("要重新登录请按任意键\t\t要退出程序请按Esc键\n");
+					char cho;
+					cho = getch();
+					if(cho == 0x1b)
+					exit(0);
+					system("cls");
+					
+					STHead();
+					printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
+					printf("\n\n\n");
+					printf("\t\t\t\t    ——       LOGIN     ——        \n");
+					printf("\n\n\n");
+					printf("\t\t  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * \n"); 
+			 
+					char password[50];
+					printf("\n\n\n\t\t请输入用户名及密码\n\n");
+					printf("\t\t\t\t\t用户名：");
+					SetPos(50,16);
+					printf("┏┈┈┈┈┈┈┈┈┈┈┈┈┈┓");  
+					SetPos(50,17);
+					printf("☆　　　　 　 ☆");
+					SetPos(50,18);
+					printf("┗┈┈┈┈┈┈┈┈┈┈┈┈┈┛"); 
+					SetPos(52,17);
+					scanf("%s",STusername);
+					printf("\n\n");
+					SetPos(30,21);
+					printf("\t\t密码： ") ;
+					SetPos(50,20);
+					printf("┏┈┈┈┈┈┈┈┈┈┈┈┈┈┓");  
+					SetPos(50,21);
+					printf("☆　　　　 　 ☆");
+					SetPos(50,22);
+					printf("┗┈┈┈┈┈┈┈┈┈┈┈┈┈┛"); 
+					SetPos(52,21);
+					 i = 0,n = 5;
+					char ch; 
+					while((ch = getch())!='\r')
+					{
+						fflush(stdin);
+						 if(ch == '\b')
+			        	 { 
+			            	if(i>0)
+			            	{
+			                	i--;
+			                	printf("\b \b");
+			                	password[i] = 0;
+			                	continue;
+			            	}
+			            	else
+			            	{
+			                	printf("\a");     //没有内容的时候
+			                	continue;
+			             	}
+			             }
+			       		 else
+			        	 {
+			            	password[i] = ch;
+			            	printf("*");
+			        	 }
+			 
+			        i++;
+					}
+					if(strcmp(password,STPASSWORD) == 0)
+					{
+						printf("\n\n登录中...");
+						judgeadmin = 0;
+						return  ; 
+					}
+					else
+					{
+						for(i = 3; i != 0; i--)
+						{ 
+							printf("\n\n登录异常，本系统将在%d秒后自动关闭...\n",i);
+							Sleep(1000);
+						} 
+						exit(0); 
+					}
+					 
+				}
 				
 			}
 				
@@ -696,6 +927,12 @@ void Head()
 	printf("\t\t\t\t\t    学生信息管理系统\t  管理端 \n");  
 	printf("\t\t\t\t\t╰═══■□■□══════════╯\n");  
 }
+void STHead()
+{
+	printf("\t\t\t\t\t╭═════════■□■□═══╮\n");  
+	printf("\t\t\t\t\t    学生信息管理系统\t  学生端 \n");  
+	printf("\t\t\t\t\t╰═══■□■□══════════╯\n"); 
+}
 STU* Creat()//创建并输入链表函数 
 {
 	for(int in = 1; in <= 3 ; in++)
@@ -709,7 +946,7 @@ STU* Creat()//创建并输入链表函数
 	char cho;
 	cho = getche();
 	if(cho == '1')
-	{  
+	{
 		for(int in = 1; in <= 3 ; in++)
 		{ 
 			Sleep(200);
@@ -797,6 +1034,10 @@ STU* Creat()//创建并输入链表函数
 		
 	
 	} 
+	else
+	{
+		return 0 ;
+	}  
 }
 void Print(STU *phead)						//输出函数
 { 
@@ -1178,15 +1419,12 @@ void Revise_stu(STU *phead)
 void Caozuowei()
 {
 	int i;
-//	int i,x,y;
-//	x = 17;y = 28;
 	printf("\n\n\n\t ");
 	for(i = 0; i < 30; i++)
 	{
 		printf("—-");
 		Sleep(10);
 	}
-//	SetPos(20,29);
 	printf("\n\t\t\t   ");
 	printf("要返回主菜单请按任意键\t\t要退出程序请按Esc键\n");
 	char cho;
@@ -1194,6 +1432,50 @@ void Caozuowei()
 	if(cho == 0x1b)
 	exit(0);
 }
+void backlogin_caozuowei()
+{
+	int i;
+	printf("\n\n\n\t ");
+	for(i = 0; i < 30; i++)
+	{
+		printf("—-");
+		Sleep(10);
+	}
+	printf("\n\t\t\t   ");
+	printf("要返回登录界面请按任意键\t\t要退出程序请按Esc键\n");
+	char cho;
+	cho = getch();
+	if(cho == 0x1b)
+	exit(0);
+	else
+	{
+		system("cls"); 
+		fflush(stdin);
+		Login();
+	}
+}
+void Shensucaozuowei()
+{
+	int i;
+	printf("\n\n\n\t ");
+	for(i = 0; i < 30; i++)
+	{
+		printf("—-");
+		Sleep(10);
+	}
+	printf("\n\t\t\t   ");
+	printf("要进入申诉界面请按任意键\t\t要退出程序请按Esc键\n");
+	char cho;
+	cho = getch();
+	if(cho == 0x1b)
+	exit(0);
+	else
+	{
+		system("cls"); 
+		fflush(stdin);
+		printf("申诉：\n   ") ;
+	}	
+} 
 void Chachong (STU*phead)
 {
 	int i,j,index = 0;
@@ -1306,5 +1588,58 @@ void Readstu()
 		ADDstu(strNum,strName,atoi(strScore)) ;
 	}
 	fclose(fp);
+}
+void Shensuwrite()
+{
+	FILE*fp = NULL;
+	//打开文件
+	if(fp == NULL)
+	{
+		printf("发生问题");
+		return; 
+	} 
+	fp = fopen("e:\\wj\\test1.txt", "a+");
+	if (fp==0) { printf("can't open file\n"); return ;}
+	fseek(fp, 0, SEEK_END);
+	char str[100] ;
+	gets(str);
+	fwrite(str, strlen(str), 1, fp);
+	fwrite("\r\n ",1,strlen("\r\n"),fp); 	
+	fclose(fp);
+}
+void Shensuread()
+{
+	int i = 0;
+	FILE*fp = fopen("e:\\wj\\test1.txt", "rb+");
+	if(fp == NULL)
+	{
+		printf("发生问题"); 
+		return ;
+	}
+	 char s1[10] = {0};
+	 char s2[10] = {0};
+	 char s3[10] = {0};
+	 char s4[10] = {0};
+	 char s5[10] = {0};
+	 char s6[10] = {0};
+	 char s7[10] = {0};
+	 char s8[10] = {0};
+	 char s9[10] = {0};
+	 char s10[10] = {0};
+	 
+	 fscanf(fp,"%s",s1);
+	 fscanf(fp,"%s",s2);
+	 fscanf(fp,"%s",s3);
+	 fscanf(fp,"%s",s4);
+	 fscanf(fp,"%s",s5);
+	 fscanf(fp,"%s",s6);
+	 fscanf(fp,"%s",s7);
+	 fscanf(fp,"%s",s8);
+	 fscanf(fp,"%s",s9);
+	 fscanf(fp,"%s",s10);
+	 
+	 printf("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n",s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
+	fclose(fp);
+		
 }
 ```
